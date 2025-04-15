@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"  
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"  
+            x:Class="Pawpal.MainPage"
+            xmlns:viewmodel="clr-namespace:Pawpal.ViewModel"
+            x:DataType="viewmodel:MainViewModel">  
+
+   <Grid RowDefinitions="100, Auto, *"  
+         ColumnDefinitions=".75*, .25*"  
+         Padding="35"
+         RowSpacing="20"
+         ColumnSpacing="10">  
+
+       <Image Grid.ColumnSpan="2"  
+              Source="pawpal_logo.png"  
+              BackgroundColor="Transparent"/>
+
+        <TimePicker 
+            x:Name="timePicker"
+            Time="{Binding SelectedTime}"
+            Format="HH:mm"
+            Grid.Row="1"
+            HorizontalOptions="Center"
+            FontSize="36"/>
+
+        <Button Text="Add"
+                Command="{Binding AddCommand}"
+                Grid.Row="1"
+                Grid.Column="1"/>
+
+        <CollectionView Grid.Row="2" Grid.ColumnSpan="2"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type x:TimeSpan}">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="Red"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteCommand}"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <Grid Padding="0,1">
+                            <Border>
+                                <Label Text="{Binding .}"
+                               FontSize="36"/>
+                            </Border>
+                        </Grid>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>  
+
+</ContentPage>
