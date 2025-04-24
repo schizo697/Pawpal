@@ -18,7 +18,7 @@
         <TimePicker 
             x:Name="timePicker"
             Time="{Binding SelectedTime}"
-            Format="HH:mm"
+            Format="hh:mm"
             Grid.Row="1"
             HorizontalOptions="Center"
             FontSize="36"/>

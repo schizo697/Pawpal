@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
 using Pawpal.ViewModel;
+using Pawpal.Services;
 
 namespace Pawpal;
 
@@ -27,6 +28,16 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		return builder.Build();
+        // Register services
+        builder.Services.AddSingleton<HttpClient>();
+        builder.Services.AddSingleton<IFeedingTimeService, FeedingTimeService>();
+
+        // Register ViewModels
+        builder.Services.AddSingleton<MainViewModel>();
+
+        // Register Pages
+        builder.Services.AddSingleton<MainPage>();
+
+        return builder.Build();
 	}
 }
