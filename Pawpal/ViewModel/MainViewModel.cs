@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Diagnostics;
 using Pawpal.Models;
 using Pawpal.Services;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Pawpal.ViewModel
 {
@@ -12,17 +14,28 @@ namespace Pawpal.ViewModel
     {
 
         private readonly IFeedingTimeService _feedingTimeService;
-        public MainViewModel(IFeedingTimeService feedingTimeService)
+        private readonly NotifyService _notifyService;
+        private bool _isAlertShown;
+        private IDispatcherTimer _alertTimer;
+        public MainViewModel(IFeedingTimeService feedingTimeService, NotifyService notifyService)
         {
             _feedingTimeService = feedingTimeService;
+            _notifyService = notifyService;
             Items = new ObservableCollection<string>();
             LoadFeedingTimesCommand.ExecuteAsync(null);
+            StartAlertMonitoring();
         }
         [ObservableProperty]
         ObservableCollection<string> items;
 
         [ObservableProperty]
         TimeSpan selectedTime;
+
+        [ObservableProperty]
+        private string _statusText = "Monitoring...";
+
+        [ObservableProperty]
+        private Color _statusColor = Colors.Gray;
 
         [RelayCommand]
         async Task LoadFeedingTimes()
@@ -34,6 +47,47 @@ namespace Pawpal.ViewModel
                 Items.Add(item.FeedingTime);
             }
         }
+
+        private void StartAlertMonitoring()
+        {
+            _alertTimer = Application.Current.Dispatcher.CreateTimer();
+            _alertTimer.Interval = TimeSpan.FromSeconds(5);
+            _alertTimer.Tick += (s, e) =>
+            {
+                Task.Run(async () => await CheckAlertStatus());
+            };
+            _alertTimer.Start();
+        }
+
+        private async Task CheckAlertStatus()
+        {
+            try
+            {
+                var status = await _notifyService.GetAlertStatusAsync();
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (status == "LOW_FOOD")
+                    {
+                        StatusText = "LOW FOOD! Refill needed!";
+                        StatusColor = Colors.Red;
+                        _ = ShowToast("Food is low! Refill needed!");
+                    }
+                    else
+                    {
+                        StatusText = "Monitoring...";
+                        StatusColor = Colors.Gray;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                var toast = Toast.Make($"Alert check failed: {ex.Message}", CommunityToolkit.Maui.Core.ToastDuration.Short, 16);
+                await toast.Show();
+            }
+        }
+
+
 
         [RelayCommand]
         async Task Add()
@@ -83,5 +137,11 @@ namespace Pawpal.ViewModel
                 await toast.Show();
             }
         }
+
+        private async Task ShowToast(string message)
+        {
+            await Toast.Make(message, CommunityToolkit.Maui.Core.ToastDuration.Short, 16).Show();
+        }
+
     }
 }

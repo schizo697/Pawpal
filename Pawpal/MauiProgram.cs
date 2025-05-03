@@ -31,6 +31,7 @@ public static class MauiProgram
         // Register services
         builder.Services.AddSingleton<HttpClient>();
         builder.Services.AddSingleton<IFeedingTimeService, FeedingTimeService>();
+        builder.Services.AddTransient<NotifyService>();
 
         // Register ViewModels
         builder.Services.AddSingleton<MainViewModel>();
